@@ -1,4 +1,4 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+// анти консоль для винды нах
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {

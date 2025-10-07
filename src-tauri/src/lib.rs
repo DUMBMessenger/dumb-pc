@@ -1,4 +1,5 @@
 mod commands;
+mod settings;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -7,7 +8,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::check_dumb,
             commands::login,
-            commands::register
+            commands::register,
+            commands::get_settings,
+            commands::set_server_url,
+            commands::set_theme,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

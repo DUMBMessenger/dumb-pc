@@ -1,3 +1,4 @@
+use crate::settings::{AppSettings, Theme};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -6,14 +7,14 @@ struct AuthData {
     username: String,
     password: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    twoFactorToken: Option<String>,
+    two_factor_token: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct LoginResponse {
     pub success: bool,
     pub token: Option<String>,
-    pub twoFactorEnabled: bool,
+    pub two_factor_enabled: bool,
 }
 
 #[derive(Deserialize)]
@@ -21,9 +22,8 @@ pub struct RegisterResponse {
     pub success: bool,
 }
 
-/// нормализует ссылку
 fn normalize_server_url(server: &str) -> String {
-    let server = server.trim_end_matches('/'); // убираем лишний слеш
+    let server = server.trim_end_matches('/');
     if server.starts_with("http://") || server.starts_with("https://") {
         server.to_string()
     } else {
@@ -35,8 +35,8 @@ fn normalize_server_url(server: &str) -> String {
 pub struct LoginResponseWrapper {
     pub success: bool,
     pub token: Option<String>,
-    pub twoFactorEnabled: bool,
-    pub message: Option<String>, // сюда кладём ошибку
+    pub two_factor_enabled: bool,
+    pub message: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -45,14 +45,14 @@ pub struct RegisterResponseWrapper {
     pub message: Option<String>,
 }
 
+static CLIENT: Client = reqwest::Client::new();
+
 #[tauri::command]
 pub async fn register(server: String, username: String, password: String) -> RegisterResponseWrapper {
     let base = normalize_server_url(&server);
     let url = format!("{}/api/register", base);
-    let client = Client::new();
-    let data = AuthData { username, password, twoFactorToken: None };
 
-    match client.post(&url).json(&data).send().await {
+    match CLIENT.post(&url).json(&AuthData { username, password, two_factor_token: None }).send().await {
         Ok(resp) => match resp.json::<RegisterResponse>().await {
             Ok(json) => RegisterResponseWrapper { success: json.success, message: None },
             Err(_) => RegisterResponseWrapper { success: false, message: Some("Не удалось разобрать ответ сервера".into()) },
@@ -70,20 +70,18 @@ pub async fn login(
 ) -> LoginResponseWrapper {
     let base = normalize_server_url(&server);
     let url = format!("{}/api/login", base);
-    let client = Client::new();
-    let data = AuthData { username, password, twoFactorToken: two_factor };
 
-    match client.post(&url).json(&data).send().await {
+    match CLIENT.post(&url).json(&AuthData { username, password, two_factor_token: two_factor }).send().await {
         Ok(resp) => match resp.json::<LoginResponse>().await {
             Ok(json) => LoginResponseWrapper {
                 success: json.success,
                 token: json.token,
-                twoFactorEnabled: json.twoFactorEnabled,
+                two_factor_enabled: json.two_factor_enabled,
                 message: None
             },
-            Err(_) => LoginResponseWrapper { success: false, token: None, twoFactorEnabled: false, message: Some("Не удалось разобрать ответ сервера".into()) },
+            Err(_) => LoginResponseWrapper { success: false, token: None, two_factor_enabled: false, message: Some("Не удалось разобрать ответ сервера".into()) },
         },
-        Err(_) => LoginResponseWrapper { success: false, token: None, twoFactorEnabled: false, message: Some("Не удалось подключиться к серверу".into()) },
+        Err(_) => LoginResponseWrapper { success: false, token: None, two_factor_enabled: false, message: Some("Не удалось подключиться к серверу".into()) },
     }
 }
 
@@ -91,10 +89,28 @@ pub async fn login(
 pub async fn check_dumb(server: String) -> bool {
     let base = normalize_server_url(&server);
     let url = format!("{}/api/ping", base);
-    let client = Client::new();
 
-    match client.get(&url).send().await {
+    match CLIENT.get(&url).send().await {
         Ok(resp) => resp.status().is_success(),
         Err(_) => false,
     }
+}
+
+#[tauri::command]
+pub fn get_settings() -> Result<AppSettings, String> {
+    AppSettings::load().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn set_server_url(new_url: String) -> Result<(), String> {
+    let mut settings = AppSettings::load().map_err(|e| e.to_string())?;
+    settings.server_url = new_url;
+    settings.save().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn set_theme(new_theme: Theme) -> Result<(), String> {
+    let mut settings = AppSettings::load().map_err(|e| e.to_string())?;
+    settings.theme = new_theme;
+    settings.save().map_err(|e| e.to_string())
 }
