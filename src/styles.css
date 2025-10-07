@@ -1,0 +1,9 @@
+body { font-family: sans-serif; background: #111; color: #eee; }
+#app { max-width: 600px; margin: 50px auto; }
+input { padding: 5px; }
+button { padding: 5px 10px; margin-left: 5px; }
+#channels li { cursor: pointer; padding: 3px; }
+#channels li:hover { background: #222; }
+#messages { margin-top: 20px; }
+#message-list { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; }
+#message-list li { padding: 5px; border-bottom: 1px solid #222; }
