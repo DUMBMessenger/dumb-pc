@@ -1,6 +1,9 @@
 use crate::settings::{AppSettings, Theme};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
+
+static CLIENT: LazyLock<Client> = LazyLock::new(Client::new);
 
 #[derive(Serialize)]
 struct AuthData {
@@ -44,8 +47,6 @@ pub struct RegisterResponseWrapper {
     pub success: bool,
     pub message: Option<String>,
 }
-
-static CLIENT: Client = reqwest::Client::new();
 
 #[tauri::command]
 pub async fn register(server: String, username: String, password: String) -> RegisterResponseWrapper {
@@ -97,20 +98,20 @@ pub async fn check_dumb(server: String) -> bool {
 }
 
 #[tauri::command]
-pub fn get_settings() -> Result<AppSettings, String> {
-    AppSettings::load().map_err(|e| e.to_string())
+pub fn get_settings(app_handle: tauri::AppHandle) -> Result<AppSettings, String> {
+    AppSettings::load(&app_handle).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn set_server_url(new_url: String) -> Result<(), String> {
-    let mut settings = AppSettings::load().map_err(|e| e.to_string())?;
+pub fn set_server_url(new_url: String, app_handle: tauri::AppHandle) -> Result<(), String> {
+    let mut settings = AppSettings::load(&app_handle).map_err(|e| e.to_string())?;
     settings.server_url = new_url;
-    settings.save().map_err(|e| e.to_string())
+    settings.save(&app_handle).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn set_theme(new_theme: Theme) -> Result<(), String> {
-    let mut settings = AppSettings::load().map_err(|e| e.to_string())?;
+pub fn set_theme(new_theme: Theme, app_handle: tauri::AppHandle) -> Result<(), String> {
+    let mut settings = AppSettings::load(&app_handle).map_err(|e| e.to_string())?;
     settings.theme = new_theme;
-    settings.save().map_err(|e| e.to_string())
+    settings.save(&app_handle).map_err(|e| e.to_string())
 }

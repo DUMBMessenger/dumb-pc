@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tauri::Manager; // Добавили
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AppSettings {
@@ -21,9 +22,9 @@ impl Default for Theme {
 impl AppSettings {
     const SETTINGS_FILE: &'static str = "settings.json";
 
-    pub fn load() -> Result<Self, Box<dyn std::error::Error>> {
-        let config_dir = tauri::api::path::config_dir()
-            .ok_or("Не удалось получить папку настроек")?;
+    pub fn load(app_handle: &tauri::AppHandle) -> Result<Self, Box<dyn std::error::Error>> {
+        let config_dir = app_handle.path().app_config_dir()
+            .map_err(|_| "Не удалось получить папку настроек")?;
         let settings_path = config_dir.join(Self::SETTINGS_FILE);
 
         if settings_path.exists() {
@@ -31,14 +32,14 @@ impl AppSettings {
             Ok(serde_json::from_str(&contents)?)
         } else {
             let default_settings = Self::default();
-            default_settings.save()?; // Сохраняем дефолтные настройки при первом запуске
+            default_settings.save(app_handle)?;
             Ok(default_settings)
         }
     }
 
-    pub fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let config_dir = tauri::api::path::config_dir()
-            .ok_or("Не удалось получить папку настроек")?;
+    pub fn save(&self, app_handle: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+        let config_dir = app_handle.path().app_config_dir()
+            .map_err(|_| "Не удалось получить папку настроек")?;
         let settings_path = config_dir.join(Self::SETTINGS_FILE);
         std::fs::create_dir_all(&config_dir)?;
         let contents = serde_json::to_string_pretty(self)?;
