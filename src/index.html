@@ -1,13 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>dumb messenger</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dumb Messenger - Вход</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="app">
-  <h1>dumb messenger</h1>
+<div class="login-container">
+  <div class="logo">
+    <h1>💬 Dumb Messenger</h1>
+    <p>Войдите в свой аккаунт</p>
+  </div>
+
+  <form id="loginForm">
+    <div class="input-group">
+      <label class="input-label">Имя пользователя</label>
+      <input type="text" class="text-field" id="username" placeholder="Введите ваш username" required>
+      <div class="error-message" id="usernameError">Пожалуйста, введите имя пользователя</div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Пароль</label>
+      <input type="password" class="text-field" id="password" placeholder="Введите ваш пароль" required>
+      <div class="error-message" id="passwordError">Пожалуйста, введите пароль</div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Двухфакторная авторизация</label>
+      <input type="password" class="text-field" id="twoFactor" placeholder="Введите ваш код" required>
+      <div class="error-message" id="twoFactorError">Пожалуйста, введите код двухфакторной аутентификации</div>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" class="checkbox" id="rememberMe">
+      <label class="checkbox-label" for="rememberMe">Запомнить меня</label>
+    </div>
+
+    <button type="submit" class="login-button" id="loginButton">
+      <span>Войти</span>
+    </button>
+  </form>
+
+  <div class="divider">
+    <span>или</span>
+  </div>
+
+  <div class="register-link">
+    Нет аккаунта? <a href="register.html" id="registerLink">Зарегистрироваться</a>
+  </div>
+
+  <div class="server-info">
+    <div class="server-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="serverStatus">Проверка подключения...</span>
+    </div>
+    <div id="serverAddress">Сервер: loading...</div>
+  </div>
 </div>
 <script src="main.js"></script>
 </body>
