@@ -115,3 +115,12 @@ pub fn set_theme(new_theme: Theme, app_handle: tauri::AppHandle) -> Result<(), S
     settings.theme = new_theme;
     settings.save(&app_handle).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub fn show_notification(title: String, body: String, app_handle: tauri::AppHandle) {
+    tauri_plugin_notification::Notification::new(&app_handle.config().identifier)
+        .title(title)
+        .body(body)
+        .show(&app_handle)
+        .unwrap_or(());
+}
