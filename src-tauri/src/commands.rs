@@ -2,6 +2,7 @@ use crate::settings::{AppSettings, Theme};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::sync::LazyLock;
+use tauri_plugin_notification::NotificationExt;
 
 static CLIENT: LazyLock<Client> = LazyLock::new(Client::new);
 
@@ -118,9 +119,10 @@ pub fn set_theme(new_theme: Theme, app_handle: tauri::AppHandle) -> Result<(), S
 
 #[tauri::command]
 pub fn show_notification(title: String, body: String, app_handle: tauri::AppHandle) {
-    tauri_plugin_notification::Notification::new(&app_handle.config().identifier)
+    app_handle.notification()
+        .builder()
         .title(title)
         .body(body)
-        .show(&app_handle)
+        .show()
         .unwrap_or(());
 }
