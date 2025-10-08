@@ -1,3 +1,5 @@
+import {monitorServer} from "./utils.js";
+
 const { invoke } = window.__TAURI__.core;
 
 const loginForm = document.getElementById('loginForm');
@@ -189,6 +191,8 @@ saveSettings.addEventListener('click', async () => {
     await checkServerConnection(currentServerUrl);
     
     settingsModal.style.display = 'none';
+
+    await loadSettings()
     alert('Настройки сохранены!');
   } catch (error) {
     alert('Ошибка сохранения настроек: ' + error);
@@ -208,6 +212,6 @@ document.getElementById('registerLink').addEventListener('click', (e) => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   await loadSettings();
-  await checkServerConnection(currentServerUrl);
+  await monitorServer(checkServerConnection, currentServerUrl);
   usernameInput.focus();
 });
