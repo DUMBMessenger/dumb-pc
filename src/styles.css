@@ -275,6 +275,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    color: black;
 }
 
 .settings-button:hover {
@@ -453,4 +455,8 @@ body {
 
 .dark-theme .status-dot.offline {
     background: #f44336;
+}
+
+.dark-theme .settings-button {
+    color: white;
 }
