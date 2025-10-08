@@ -11,12 +11,17 @@
 <body>
 <div class="app-container">
   <header class="app-header">
-    <h1>💬 Dumb Messenger</h1>
+    <div class="header-left">
+      <h1>💬 Dumb Messenger</h1>
+    </div>
     <div class="header-actions">
-      <button class="icon-button" id="settingsButton">
+      <button class="icon-button" id="newChatButton" title="Новый чат">
+        <span class="material-icons">add</span>
+      </button>
+      <button class="icon-button" id="settingsButton" title="Настройки">
         <span class="material-icons">settings</span>
       </button>
-      <button class="icon-button" id="logoutButton">
+      <button class="icon-button" id="logoutButton" title="Выйти">
         <span class="material-icons">logout</span>
       </button>
     </div>
@@ -24,11 +29,26 @@
   
   <main class="main-content">
     <div class="chats-container">
-      <h2>Ваши чаты</h2>
+      <div class="chats-header">
+        <h2>Ваши чаты</h2>
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <span class="material-icons search-icon">search</span>
+            <input type="text" id="searchInput" placeholder="Поиск чатов..." class="search-input">
+            <button class="clear-search" id="clearSearch" style="display: none;">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <div class="chats-list" id="chatsList">
         <div class="empty-state">
           <span class="material-icons">chat</span>
           <p>У вас пока нет чатов</p>
+          <button class="login-button" id="startChatButton" style="margin-top: 16px;">
+            <span>Создать первый чат</span>
+          </button>
         </div>
       </div>
     </div>
@@ -55,6 +75,7 @@
       </div>
     </div>
     <div class="modal-footer">
+      <button class="secondary-button" id="cancelSettings">Отмена</button>
       <button class="login-button" id="saveSettings">Сохранить</button>
     </div>
   </div>

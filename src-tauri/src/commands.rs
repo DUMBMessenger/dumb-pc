@@ -1,4 +1,3 @@
-// commands.rs
 use crate::settings::{AppSettings, Theme};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -30,13 +29,6 @@ pub struct RegisterResponse {
     pub message: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
-#[serde(tag = "field", content = "value")]
-pub enum SettingUpdate {
-    ServerUrl(String),
-    Theme(Theme),
-}
-
 fn normalize_server_url(server: &str) -> String {
     let server = server.trim_end_matches('/');
     if server.starts_with("http://") || server.starts_with("https://") {
@@ -59,84 +51,6 @@ pub struct LoginResponseWrapper {
 pub struct RegisterResponseWrapper {
     pub success: bool,
     pub message: Option<String>,
-}
-
-#[derive(serde::Serialize)]
-pub struct ChannelsResponseWrapper {
-    pub success: bool,
-    pub channels: Option<ChannelsResponse>,
-}
-
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct ChannelsResponse {
-    pub channels: Vec<Channel>,
-}
-
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Channel {
-    pub id: String,
-    pub name: String,
-    pub creator: String,
-    pub createdAt: i32,
-    pub customId: bool
-}
-
-#[derive(serde::Serialize)]
-pub struct CreateChannelResponseWrapper {
-    pub success: bool,
-    pub channel: Option<CreateChannelResponse>,
-    pub message: Option<String>,
-}
-
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct CreateChannelResponse {
-    pub success: bool,
-    pub name: String,
-    pub channelId: String,
-}
-
-#[tauri::command]
-pub async fn get_channels(server: String, token: String) -> ChannelsResponseWrapper {
-    let base = normalize_server_url(&server);
-    let url = format!("{}/api/channels", base);
-
-    match CLIENT
-        .get(&url)
-        .header("Authorization", format!("Bearer {}", token))
-        .send()
-        .await
-    {
-        Ok(resp) => match resp.json::<ChannelsResponse>().await {
-            Ok(json) => ChannelsResponseWrapper { success: true, channels: Some(json) },
-            Err(_) => ChannelsResponseWrapper { success: false, channels: None },
-        },
-        Err(_) => ChannelsResponseWrapper { success: false, channels: None },
-    }
-}
-
-#[tauri::command]
-pub async fn create_channel(server: String, token: String, name: String, custom_id: String) -> CreateChannelResponseWrapper {
-    let base = normalize_server_url(&server);
-    let url = format!("{}/api/channels/create", base);
-
-    let body = serde_json::json!({
-        "name": name,
-        "customId": custom_id
-    });
-
-    match CLIENT
-        .post(&url)
-        .header("Authorization", format!("Bearer {}", token))
-        .json(&body)
-        .send()
-        .await
-    {
-        Ok(resp) => match resp.json::<CreateChannelResponse>().await {
-            Ok(json) => CreateChannelResponseWrapper { success: true, channel: Some(json), message: None },
-            Err(_) => CreateChannelResponseWrapper { success: false, channel: None, message: Some("Не удалось разобрать ответ сервера".into()) },
-        },
-        Err(_) => CreateChannelResponseWrapper { success: false, channel: None, message: Some("Не удалось подключиться к серверу".into()) },
-    }
 }
 
 #[tauri::command]
@@ -227,14 +141,16 @@ pub fn get_settings(app_handle: tauri::AppHandle) -> Result<AppSettings, String>
 }
 
 #[tauri::command]
-pub fn update_setting(update: SettingUpdate, app_handle: tauri::AppHandle) -> Result<(), String> {
+pub fn set_server_url(new_url: String, app_handle: tauri::AppHandle) -> Result<(), String> {
     let mut settings = AppSettings::load(&app_handle).map_err(|e| e.to_string())?;
+    settings.server_url = new_url;
+    settings.save(&app_handle).map_err(|e| e.to_string())
+}
 
-    match update {
-        SettingUpdate::ServerUrl(url) => settings.server_url = url,
-        SettingUpdate::Theme(theme) => settings.theme = theme,
-    }
-
+#[tauri::command]
+pub fn set_theme(new_theme: Theme, app_handle: tauri::AppHandle) -> Result<(), String> {
+    let mut settings = AppSettings::load(&app_handle).map_err(|e| e.to_string())?;
+    settings.theme = new_theme;
     settings.save(&app_handle).map_err(|e| e.to_string())
 }
 
@@ -246,4 +162,51 @@ pub fn show_notification(title: String, body: String, app_handle: tauri::AppHand
         .body(body)
         .show()
         .unwrap_or(());
+}
+
+// Новые команды для API вызовов
+#[tauri::command]
+pub async fn api_get(server: String, token: String, endpoint: String) -> Result<serde_json::Value, String> {
+    let base = normalize_server_url(&server);
+    let url = format!("{}{}", base, endpoint);
+
+    let response = CLIENT
+        .get(&url)
+        .header("Authorization", format!("Bearer {}", token))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let status = response.status();
+    let response_text = response.text().await.map_err(|e| e.to_string())?;
+
+    if status.is_success() {
+        serde_json::from_str(&response_text).map_err(|e| e.to_string())
+    } else {
+        Err(format!("HTTP {}: {}", status, response_text))
+    }
+}
+
+#[tauri::command]
+pub async fn api_post(server: String, token: String, endpoint: String, data: serde_json::Value) -> Result<serde_json::Value, String> {
+    let base = normalize_server_url(&server);
+    let url = format!("{}{}", base, endpoint);
+
+    let response = CLIENT
+        .post(&url)
+        .header("Authorization", format!("Bearer {}", token))
+        .header("Content-Type", "application/json")
+        .json(&data)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let status = response.status();
+    let response_text = response.text().await.map_err(|e| e.to_string())?;
+
+    if status.is_success() {
+        serde_json::from_str(&response_text).map_err(|e| e.to_string())
+    } else {
+        Err(format!("HTTP {}: {}", status, response_text))
+    }
 }

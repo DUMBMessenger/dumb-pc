@@ -11,10 +11,11 @@ pub fn run() {
             commands::login,
             commands::register,
             commands::get_settings,
-            commands::update_setting,
+            commands::set_server_url,
+            commands::set_theme,
             commands::show_notification,
-            commands::get_channels,
-            commands::create_channel
+            commands::api_get,
+            commands::api_post,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
