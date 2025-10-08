@@ -55,66 +55,54 @@ async function loadChats() {
     if (!checkAuth()) return;
 
     const token = localStorage.getItem("token");
-    
+
     try {
-        // TODO: Реализовать вызов Tauri команды для получения чатов
-        
-        // Временно отображаем заглушку
-        displayMockChats();
-        
+        const response = await invoke('get_channels', {
+            server: currentServerUrl,
+            token
+        });
+
+        if (!response.success || !response.channels || response.channels.length === 0) {
+            chatsList.innerHTML = `
+                <div class="empty-state">
+                    <span class="material-icons">chat</span>
+                    <p>У вас пока нет чатов</p>
+                    <button class="login-button" id="startChatButton" style="margin-top: 16px;">
+                        <span>Начать общение</span>
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        chatsList.innerHTML = response.channels.map(chat => `
+            <div class="chat-item" data-chat-id="${chat.id}">
+                <div class="chat-avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <div class="chat-content">
+                    <div class="chat-header">
+                        <span class="chat-name">${chat.name}</span>
+                        <span class="chat-time">${new Date(chat.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div class="chat-preview">
+                        <span class="last-message">Создано пользователем ${chat.creator}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const chatId = item.getAttribute('data-chat-id');
+                openChat(chatId);
+            });
+        });
+
     } catch (error) {
         console.error('Ошибка загрузки чатов:', error);
         displayError('Не удалось загрузить чаты');
     }
-}
-
-// Отображение mock-чатов (временное решение)
-function displayMockChats() {
-    const mockChats = [
-        { id: 1, name: "Общий чат", lastMessage: "Добро пожаловать!", unread: 0, time: "12:30" },
-        { id: 2, name: "Алексей", lastMessage: "Привет! Как дела?", unread: 2, time: "12:25" },
-        { id: 3, name: "Мария", lastMessage: "Жду тебя на встрече", unread: 0, time: "11:45" },
-        { id: 4, name: "Рабочая группа", lastMessage: "Новый проект запущен", unread: 5, time: "10:15" }
-    ];
-
-    if (mockChats.length === 0) {
-        chatsList.innerHTML = `
-            <div class="empty-state">
-                <span class="material-icons">chat</span>
-                <p>У вас пока нет чатов</p>
-                <button class="login-button" id="startChatButton" style="margin-top: 16px;">
-                    <span>Начать общение</span>
-                </button>
-            </div>
-        `;
-        return;
-    }
-
-    chatsList.innerHTML = mockChats.map(chat => `
-        <div class="chat-item" data-chat-id="${chat.id}">
-            <div class="chat-avatar">
-                <span class="material-icons">person</span>
-            </div>
-            <div class="chat-content">
-                <div class="chat-header">
-                    <span class="chat-name">${chat.name}</span>
-                    <span class="chat-time">${chat.time}</span>
-                </div>
-                <div class="chat-preview">
-                    <span class="last-message">${chat.lastMessage}</span>
-                    ${chat.unread > 0 ? `<span class="unread-badge">${chat.unread}</span>` : ''}
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    // Добавляем обработчики клика по чатам
-    document.querySelectorAll('.chat-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const chatId = item.getAttribute('data-chat-id');
-            openChat(chatId);
-        });
-    });
 }
 
 // Отображение ошибки
@@ -152,8 +140,8 @@ async function saveSettingsHandler() {
     const newTheme = themeSelect.value === 'dark' ? 'Dark' : 'Light';
 
     try {
-        await invoke('set_server_url', { newUrl: newServerUrl });
-        await invoke('set_theme', { newTheme: newTheme });
+        await invoke("update_setting", { update: { field: "ServerUrl", value: newServerUrl } })
+        await invoke("update_setting", { update: { field: "Theme", value: newTheme } })
         
         currentServerUrl = newServerUrl;
         applyTheme(newTheme);

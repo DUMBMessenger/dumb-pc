@@ -13,6 +13,8 @@ pub fn run() {
             commands::get_settings,
             commands::update_setting,
             commands::show_notification,
+            commands::get_channels,
+            commands::create_channel
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

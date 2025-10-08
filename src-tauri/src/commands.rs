@@ -61,6 +61,84 @@ pub struct RegisterResponseWrapper {
     pub message: Option<String>,
 }
 
+#[derive(serde::Serialize)]
+pub struct ChannelsResponseWrapper {
+    pub success: bool,
+    pub channels: Option<ChannelsResponse>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct ChannelsResponse {
+    pub channels: Vec<Channel>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Channel {
+    pub id: String,
+    pub name: String,
+    pub creator: String,
+    pub createdAt: i32,
+    pub customId: bool
+}
+
+#[derive(serde::Serialize)]
+pub struct CreateChannelResponseWrapper {
+    pub success: bool,
+    pub channel: Option<CreateChannelResponse>,
+    pub message: Option<String>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct CreateChannelResponse {
+    pub success: bool,
+    pub name: String,
+    pub channelId: String,
+}
+
+#[tauri::command]
+pub async fn get_channels(server: String, token: String) -> ChannelsResponseWrapper {
+    let base = normalize_server_url(&server);
+    let url = format!("{}/api/channels", base);
+
+    match CLIENT
+        .get(&url)
+        .header("Authorization", format!("Bearer {}", token))
+        .send()
+        .await
+    {
+        Ok(resp) => match resp.json::<ChannelsResponse>().await {
+            Ok(json) => ChannelsResponseWrapper { success: true, channels: Some(json) },
+            Err(_) => ChannelsResponseWrapper { success: false, channels: None },
+        },
+        Err(_) => ChannelsResponseWrapper { success: false, channels: None },
+    }
+}
+
+#[tauri::command]
+pub async fn create_channel(server: String, token: String, name: String, custom_id: String) -> CreateChannelResponseWrapper {
+    let base = normalize_server_url(&server);
+    let url = format!("{}/api/channels/create", base);
+
+    let body = serde_json::json!({
+        "name": name,
+        "customId": custom_id
+    });
+
+    match CLIENT
+        .post(&url)
+        .header("Authorization", format!("Bearer {}", token))
+        .json(&body)
+        .send()
+        .await
+    {
+        Ok(resp) => match resp.json::<CreateChannelResponse>().await {
+            Ok(json) => CreateChannelResponseWrapper { success: true, channel: Some(json), message: None },
+            Err(_) => CreateChannelResponseWrapper { success: false, channel: None, message: Some("Не удалось разобрать ответ сервера".into()) },
+        },
+        Err(_) => CreateChannelResponseWrapper { success: false, channel: None, message: Some("Не удалось подключиться к серверу".into()) },
+    }
+}
+
 #[tauri::command]
 pub async fn register(server: String, username: String, password: String) -> RegisterResponseWrapper {
     let base = normalize_server_url(&server);
