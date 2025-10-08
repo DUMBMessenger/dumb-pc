@@ -1,4 +1,3 @@
-// src/lib.rs
 mod commands;
 mod settings;
 

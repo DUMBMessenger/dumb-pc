@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::Manager; // Добавили
+use tauri::Manager;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AppSettings {

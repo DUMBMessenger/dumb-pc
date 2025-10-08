@@ -1,3 +1,4 @@
+// commands.rs
 use crate::settings::{AppSettings, Theme};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -18,12 +19,15 @@ struct AuthData {
 pub struct LoginResponse {
     pub success: bool,
     pub token: Option<String>,
-    pub two_factor_enabled: bool,
+    pub requires2fa: Option<bool>,
+    pub session_id: Option<String>,
+    pub message: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct RegisterResponse {
     pub success: bool,
+    pub message: Option<String>,
 }
 
 fn normalize_server_url(server: &str) -> String {
@@ -39,7 +43,8 @@ fn normalize_server_url(server: &str) -> String {
 pub struct LoginResponseWrapper {
     pub success: bool,
     pub token: Option<String>,
-    pub two_factor_enabled: bool,
+    pub requires2fa: Option<bool>,
+    pub session_id: Option<String>,
     pub message: Option<String>,
 }
 
@@ -56,7 +61,7 @@ pub async fn register(server: String, username: String, password: String) -> Reg
 
     match CLIENT.post(&url).json(&AuthData { username, password, two_factor_token: None }).send().await {
         Ok(resp) => match resp.json::<RegisterResponse>().await {
-            Ok(json) => RegisterResponseWrapper { success: json.success, message: None },
+            Ok(json) => RegisterResponseWrapper { success: json.success, message: json.message },
             Err(_) => RegisterResponseWrapper { success: false, message: Some("Не удалось разобрать ответ сервера".into()) },
         },
         Err(_) => RegisterResponseWrapper { success: false, message: Some("Не удалось подключиться к серверу".into()) },
@@ -68,22 +73,55 @@ pub async fn login(
     server: String,
     username: String,
     password: String,
-    two_factor: Option<String>,
+    two_factor_token: Option<String>,
+    session_id: Option<String>,
 ) -> LoginResponseWrapper {
     let base = normalize_server_url(&server);
-    let url = format!("{}/api/login", base);
+    
+    let url = if two_factor_token.is_some() && session_id.is_some() {
+        format!("{}/api/2fa/verify-login", base)
+    } else {
+        format!("{}/api/login", base)
+    };
 
-    match CLIENT.post(&url).json(&AuthData { username, password, two_factor_token: two_factor }).send().await {
+    let payload = if two_factor_token.is_some() && session_id.is_some() {
+        serde_json::json!({
+            "username": username,
+            "sessionId": session_id,
+            "twoFactorToken": two_factor_token
+        })
+    } else {
+        serde_json::json!({
+            "username": username,
+            "password": password,
+            "twoFactorToken": two_factor_token
+        })
+    };
+
+    match CLIENT.post(&url).json(&payload).send().await {
         Ok(resp) => match resp.json::<LoginResponse>().await {
             Ok(json) => LoginResponseWrapper {
                 success: json.success,
                 token: json.token,
-                two_factor_enabled: json.two_factor_enabled,
-                message: None
+                requires2fa: json.requires2fa,
+                session_id: json.session_id,
+                message: json.message
             },
-            Err(_) => LoginResponseWrapper { success: false, token: None, two_factor_enabled: false, message: Some("Не удалось разобрать ответ сервера".into()) },
+            Err(_) => LoginResponseWrapper { 
+                success: false, 
+                token: None, 
+                requires2fa: None,
+                session_id: None,
+                message: Some("Не удалось разобрать ответ сервера".into()) 
+            },
         },
-        Err(_) => LoginResponseWrapper { success: false, token: None, two_factor_enabled: false, message: Some("Не удалось подключиться к серверу".into()) },
+        Err(_) => LoginResponseWrapper { 
+            success: false, 
+            token: None, 
+            requires2fa: None,
+            session_id: None,
+            message: Some("Не удалось подключиться к серверу".into()) 
+        },
     }
 }
 
