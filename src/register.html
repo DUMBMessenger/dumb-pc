@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +9,83 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>привет регистрация</h1>
+<div class="login-container">
+  <div class="logo">
+    <h1>💬 Dumb Messenger</h1>
+    <p>Создайте новый аккаунт</p>
+  </div>
+
+  <form id="registerForm">
+    <div class="input-group">
+      <label class="input-label">Имя пользователя</label>
+      <input type="text" class="text-field" id="username" placeholder="Введите ваш username" required>
+      <div class="error-message" id="usernameError">Пожалуйста, введите имя пользователя</div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Пароль</label>
+      <input type="password" class="text-field" id="password" placeholder="Введите ваш пароль" required>
+      <div class="error-message" id="passwordError">Пожалуйста, введите пароль</div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Подтвердите пароль</label>
+      <input type="password" class="text-field" id="confirmPassword" placeholder="Повторите пароль" required>
+      <div class="error-message" id="confirmPasswordError">Пароли не совпадают</div>
+    </div>
+
+    <button type="submit" class="login-button" id="registerButton">
+      <span>Зарегистрироваться</span>
+    </button>
+  </form>
+
+  <div class="divider">
+    <span>или</span>
+  </div>
+
+  <div class="register-link">
+    Уже есть аккаунт? <a href="index.html" id="loginLink">Войти</a>
+  </div>
+
+  <div class="server-settings">
+    <div class="server-info">
+      <div class="server-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="serverStatus">Проверка подключения...</span>
+      </div>
+      <div id="serverAddress">Сервер: loading...</div>
+    </div>
+    <button class="settings-button" id="settingsButton">
+      <span class="material-icons">settings</span>
+    </button>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Настройки</h3>
+      <button class="close-button" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">URL сервера</label>
+        <input type="text" class="text-field" id="serverUrlInput" placeholder="http://localhost:8000">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Тема</label>
+        <select class="text-field" id="themeSelect">
+          <option value="light">Светлая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="login-button" id="saveSettings">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="register.js"></script>
 </body>
 </html>

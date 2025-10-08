@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +9,57 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>привет чаты</h1>
+<div class="app-container">
+  <header class="app-header">
+    <h1>💬 Dumb Messenger</h1>
+    <div class="header-actions">
+      <button class="icon-button" id="settingsButton">
+        <span class="material-icons">settings</span>
+      </button>
+      <button class="icon-button" id="logoutButton">
+        <span class="material-icons">logout</span>
+      </button>
+    </div>
+  </header>
+  
+  <main class="main-content">
+    <div class="chats-container">
+      <h2>Ваши чаты</h2>
+      <div class="chats-list" id="chatsList">
+        <div class="empty-state">
+          <span class="material-icons">chat</span>
+          <p>У вас пока нет чатов</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Настройки</h3>
+      <button class="close-button" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">URL сервера</label>
+        <input type="text" class="text-field" id="serverUrlInput" placeholder="http://localhost:8000">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Тема</label>
+        <select class="text-field" id="themeSelect">
+          <option value="light">Светлая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="login-button" id="saveSettings">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="chats.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-* {
+{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -217,4 +217,126 @@ body {
 
 .status-dot.offline {
     background: #f44336;
+}
+
+.server-settings {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.settings-button:hover {
+  background: #e0e0e0;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dark-theme {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
+
+.dark-theme .login-container {
+  background: #2c3e50;
+  color: #ecf0f1;
+}
+
+.dark-theme .input-label,
+.dark-theme .checkbox-label,
+.dark-theme .logo p,
+.dark-theme .server-info {
+  color: #ecf0f1;
+}
+
+.dark-theme .text-field {
+  background: #34495e;
+  border-color: #4a6278;
+  color: #ecf0f1;
+}
+
+.dark-theme .text-field:focus {
+  border-color: #6200ee;
+}
+
+.dark-theme .server-settings {
+  background: #34495e;
+}
+
+.dark-theme .modal-content {
+  background: #2c3e50;
+  color: #ecf0f1;
+}
+
+.dark-theme .modal-header h3 {
+  color: #ecf0f1;
+}
+
+.dark-theme .divider span {
+  background: #2c3e50;
 }

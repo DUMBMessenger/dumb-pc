@@ -28,9 +28,9 @@
       <div class="error-message" id="passwordError">Пожалуйста, введите пароль</div>
     </div>
 
-    <div class="input-group">
+    <div class="input-group" id="twoFactorGroup" style="display: none;">
       <label class="input-label">Двухфакторная авторизация</label>
-      <input type="password" class="text-field" id="twoFactor" placeholder="Введите ваш код" required>
+      <input type="password" class="text-field" id="twoFactor" placeholder="Введите ваш код">
       <div class="error-message" id="twoFactorError">Пожалуйста, введите код двухфакторной аутентификации</div>
     </div>
 
@@ -52,14 +52,45 @@
     Нет аккаунта? <a href="register.html" id="registerLink">Зарегистрироваться</a>
   </div>
 
-  <div class="server-info">
-    <div class="server-status">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="serverStatus">Проверка подключения...</span>
+  <div class="server-settings">
+    <div class="server-info">
+      <div class="server-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="serverStatus">Проверка подключения...</span>
+      </div>
+      <div id="serverAddress">Сервер: loading...</div>
     </div>
-    <div id="serverAddress">Сервер: loading...</div>
+    <button class="settings-button" id="settingsButton">
+      <span class="material-icons">settings</span>
+    </button>
   </div>
 </div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Настройки</h3>
+      <button class="close-button" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">URL сервера</label>
+        <input type="text" class="text-field" id="serverUrlInput" placeholder="http://localhost:8000">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Тема</label>
+        <select class="text-field" id="themeSelect">
+          <option value="light">Светлая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="login-button" id="saveSettings">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <script src="main.js"></script>
 </body>
 </html>

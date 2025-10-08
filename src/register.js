@@ -1,11 +1,10 @@
 const { invoke } = window.__TAURI__.core;
 
-const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
-const twoFactorInput = document.getElementById('twoFactor');
-const twoFactorGroup = document.getElementById('twoFactorGroup');
-const loginButton = document.getElementById('loginButton');
+const confirmPasswordInput = document.getElementById('confirmPassword');
+const registerButton = document.getElementById('registerButton');
 const serverStatus = document.getElementById('serverStatus');
 const statusDot = document.getElementById('statusDot');
 const serverAddress = document.getElementById('serverAddress');
@@ -17,7 +16,6 @@ const themeSelect = document.getElementById('themeSelect');
 const saveSettings = document.getElementById('saveSettings');
 
 let currentServerUrl = "0.0.0.0:8000";
-let requiresTwoFactor = false;
 
 async function loadSettings() {
   try {
@@ -53,60 +51,6 @@ async function checkServerConnection(server) {
   }
 }
 
-async function handleLogin() {
-  try {
-    const loginData = {
-      server: currentServerUrl,
-      username: usernameInput.value,
-      password: passwordInput.value
-    };
-
-    if (requiresTwoFactor && twoFactorInput.value.trim()) {
-      loginData.two_factor = twoFactorInput.value;
-    }
-
-    const response = await invoke('login', loginData);
-
-    if (response.success) {
-      const token = response.token;
-      localStorage.setItem("token", token);
-      localStorage.setItem("server", currentServerUrl);
-      return { success: true };
-    } else {
-      if (response.two_factor_enabled && !requiresTwoFactor) {
-        requiresTwoFactor = true;
-        twoFactorGroup.style.display = 'block';
-        return { success: false, requiresTwoFactor: true };
-      }
-      return { success: false, message: response.message || 'Ошибка входа' };
-    }
-
-  } catch (err) {
-    console.error('Ошибка при вызове команды Tauri:', err);
-    return { success: false, message: 'Ошибка подключения' };
-  }
-}
-
-async function handleRegister(username, password) {
-  try {
-    const response = await invoke('register', {
-      server: currentServerUrl,
-      username: username,
-      password: password,
-    });
-
-    if (response.success) {
-      return { success: true };
-    } else {
-      return { success: false, message: response.message || 'Ошибка регистрации' };
-    }
-
-  } catch (err) {
-    console.error('Ошибка при вызове команды Tauri:', err);
-    return { success: false, message: 'Ошибка подключения' };
-  }
-}
-
 function validateForm() {
   let isValid = true;
 
@@ -129,41 +73,46 @@ function validateForm() {
     isValid = false;
   }
 
-  if (requiresTwoFactor && !twoFactorInput.value.trim()) {
-    document.getElementById('twoFactorError').style.display = 'block';
-    twoFactorInput.classList.add('error');
+  if (passwordInput.value !== confirmPasswordInput.value) {
+    document.getElementById('confirmPasswordError').style.display = 'block';
+    confirmPasswordInput.classList.add('error');
     isValid = false;
   }
 
   return isValid;
 }
 
-loginForm.addEventListener('submit', async (e) => {
+registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   if (!validateForm()) {
     return;
   }
 
-  loginButton.innerHTML = '<div class="spinner"></div><span>Вход...</span>';
-  loginButton.classList.add('loading');
-  loginButton.disabled = true;
+  registerButton.innerHTML = '<div class="spinner"></div><span>Регистрация...</span>';
+  registerButton.classList.add('loading');
+  registerButton.disabled = true;
 
-  const result = await handleLogin();
+  try {
+    const result = await invoke('register', {
+      server: currentServerUrl,
+      username: usernameInput.value,
+      password: passwordInput.value
+    });
 
-  if (result.success) {
-    window.location.href = "chats.html";
-  } else {
-    if (result.requiresTwoFactor) {
-      twoFactorInput.focus();
-      loginButton.innerHTML = '<span>Войти с 2FA</span>';
+    if (result.success) {
+      alert('Регистрация успешна! Теперь вы можете войти в систему.');
+      window.location.href = "index.html";
     } else {
-      alert(result.message || 'Ошибка входа: неверные данные или сервер недоступен');
-      loginButton.innerHTML = '<span>Войти</span>';
+      alert(result.message || 'Ошибка регистрации');
     }
-    loginButton.classList.remove('loading');
-    loginButton.disabled = false;
+  } catch (error) {
+    alert('Ошибка при регистрации: ' + error);
   }
+
+  registerButton.innerHTML = '<span>Зарегистрироваться</span>';
+  registerButton.classList.remove('loading');
+  registerButton.disabled = false;
 });
 
 settingsButton.addEventListener('click', () => {
@@ -201,9 +150,9 @@ window.addEventListener('click', (e) => {
   }
 });
 
-document.getElementById('registerLink').addEventListener('click', (e) => {
+document.getElementById('loginLink').addEventListener('click', (e) => {
   e.preventDefault();
-  window.location.href = "register.html";
+  window.location.href = "index.html";
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
