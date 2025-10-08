@@ -179,9 +179,9 @@ saveSettings.addEventListener('click', async () => {
   const newTheme = themeSelect.value === 'dark' ? 'Dark' : 'Light';
 
   try {
-    await invoke('set_server_url', { newUrl: newServerUrl });
-    await invoke('set_theme', { newTheme: newTheme });
-    
+    await invoke("update_setting", { update: { field: "ServerUrl", value: newServerUrl } })
+    await invoke("update_setting", { update: { field: "Theme", value: newTheme } })
+
     currentServerUrl = newServerUrl;
     serverAddress.textContent = `Сервер: ${currentServerUrl}`;
     applyTheme(newTheme);

@@ -30,6 +30,13 @@ pub struct RegisterResponse {
     pub message: Option<String>,
 }
 
+#[derive(serde::Deserialize)]
+#[serde(tag = "field", content = "value")]
+pub enum SettingUpdate {
+    ServerUrl(String),
+    Theme(Theme),
+}
+
 fn normalize_server_url(server: &str) -> String {
     let server = server.trim_end_matches('/');
     if server.starts_with("http://") || server.starts_with("https://") {
@@ -142,16 +149,14 @@ pub fn get_settings(app_handle: tauri::AppHandle) -> Result<AppSettings, String>
 }
 
 #[tauri::command]
-pub fn set_server_url(new_url: String, app_handle: tauri::AppHandle) -> Result<(), String> {
+pub fn update_setting(update: SettingUpdate, app_handle: tauri::AppHandle) -> Result<(), String> {
     let mut settings = AppSettings::load(&app_handle).map_err(|e| e.to_string())?;
-    settings.server_url = new_url;
-    settings.save(&app_handle).map_err(|e| e.to_string())
-}
 
-#[tauri::command]
-pub fn set_theme(new_theme: Theme, app_handle: tauri::AppHandle) -> Result<(), String> {
-    let mut settings = AppSettings::load(&app_handle).map_err(|e| e.to_string())?;
-    settings.theme = new_theme;
+    match update {
+        SettingUpdate::ServerUrl(url) => settings.server_url = url,
+        SettingUpdate::Theme(theme) => settings.theme = theme,
+    }
+
     settings.save(&app_handle).map_err(|e| e.to_string())
 }
 

@@ -11,8 +11,7 @@ pub fn run() {
             commands::login,
             commands::register,
             commands::get_settings,
-            commands::set_server_url,
-            commands::set_theme,
+            commands::update_setting,
             commands::show_notification,
         ])
         .run(tauri::generate_context!())
